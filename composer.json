@@ -1,0 +1,38 @@
+{
+    "name": "nuxed/http-server",
+    "description": "Nuxed Http Server",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "azjezz",
+            "email": "azjezz@protonmail.com"
+        },
+        {
+            "name": "Nuxed Community",
+            "homepage": "https://github.com/nuxed/http-server/graphs/contributors"
+        }
+    ],
+    "require": {
+        "hhvm": "^4.25",
+        "hhvm/hsl": "^4.25",
+        "hhvm/hsl-experimental": "^4.37",
+        "nuxed/contract": "^0.2",
+        "nuxed/http-message": "^0.3"
+    },
+    "require-dev": {
+        "hhvm/hhast": "^4.25",
+        "hhvm/hacktest": "^2.0",
+        "facebook/fbexpect": "^2.7"
+    },
+    "scripts": {
+        "check": [
+            "@type-check",
+            "@lint",
+            "@test"
+        ],
+        "lint": "hhast-lint -v src/",
+        "test": "hacktest tests/",
+        "type-check": "hh_client src/"
+    }
+}
