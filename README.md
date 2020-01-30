@@ -41,7 +41,8 @@ async function main(): Awaitable<void> {
     return $response;
   });
 
-  $server = new Server\Server($socket, $handler);  
+  $server = new Server\Server($options, $handler);  
+  $server->listen($socket);
 
   await $server->run();
 }
