@@ -1,8 +1,6 @@
 namespace Nuxed\Http\Server\_Private;
 
-use namespace HH\Lib\Experimental\OS;
-use namespace HH\Lib\Async;
-use namespace HH\Asio;
+use namespace HH\Lib\{Async, OS};
 
 async function timeout<T>(Awaitable<T> $task, float $seconds): Awaitable<T> {
   $usecs = (int)(1000000 * $seconds);

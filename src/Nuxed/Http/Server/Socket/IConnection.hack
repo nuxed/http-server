@@ -1,6 +1,6 @@
 namespace Nuxed\Http\Server\Socket;
 
-use namespace HH\Lib\Experimental\{IO, Network, TCP, Unix};
+use namespace HH\Lib\IO;
 
 interface IConnection extends IO\CloseableReadWriteHandle {
   /**

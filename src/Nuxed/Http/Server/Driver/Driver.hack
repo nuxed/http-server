@@ -1,10 +1,7 @@
 namespace Nuxed\Http\Server\Driver;
 
-use namespace HH\Lib\Str;
-use namespace Nuxed\Http\Server\{Exception, Parser, Responder, Socket, Handler};
-use namespace Nuxed\Contract\Http\Message;
-use namespace Nuxed\Contract\Log;
-use namespace Nuxed\Contract\Http\Server;
+use namespace Nuxed\Http\Server\{Exception, Handler, Parser, Responder, Socket};
+use namespace Nuxed\Contract\Http\{Message, Server};
 use namespace Nuxed\Http;
 
 final class Driver implements IDriver {

@@ -85,13 +85,11 @@ final class PathMiddlewareDecorator implements Server\IMiddleware {
   private function prepareHandlerForOriginalRequest(
     Server\IHandler $handler,
   ): Server\IHandler {
-    $callable = async ($request) ==> {
+    return new Handler\CallableHandlerDecorator(async ($request) ==> {
       $uri = $request->getUri();
       $uri = $uri->withPath($this->prefix.$uri->getPath());
       return await $handler->handle($request->withUri($uri));
-    };
-
-    return new Handler\CallableHandlerDecorator($callable);
+    });
   }
 
   /**

@@ -1,11 +1,8 @@
 namespace Nuxed\Http\Server;
 
 use namespace HH\Asio;
-use namespace HH\Lib;
-use namespace HH\Lib\{Async, C, Str, Vec};
-use namespace HH\Lib\Experimental\IO;
-use namespace Nuxed\Http\Message\Response;
-use namespace Nuxed\Contract\Http\{Message, Server};
+use namespace HH\Lib\{Async, Vec};
+use namespace Nuxed\Contract\Http\Server;
 use namespace Nuxed\Contract\Log;
 
 final class Server {
@@ -73,6 +70,7 @@ final class Server {
     foreach ($this->sockets as $socket) {
       $servers[] = async {
         while ($this->running) {
+          /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
           $connection = await $socket->nextConnection();
           $pending->push($this->semaphore->waitForAsync($connection));
         }
@@ -82,8 +80,10 @@ final class Server {
     $observe = async {
       while ($this->running) {
         if (!$pending->isEmpty()) {
+          /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
           await $pending->shift();
         } else {
+          /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
           await Asio\later();
         }
       }
@@ -94,7 +94,8 @@ final class Server {
 
   private async function start(Socket\IServer $socket): Awaitable<void> {
     while ($this->running) {
-      $connection = await $socket->nextConnection();
+      /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
+      $_connection = await $socket->nextConnection();
     }
   }
 }

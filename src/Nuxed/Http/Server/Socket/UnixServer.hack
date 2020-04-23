@@ -1,6 +1,6 @@
 namespace Nuxed\Http\Server\Socket;
 
-use namespace HH\Lib\Experimental\Unix;
+use namespace HH\Lib\Unix;
 
 final class UnixServer implements IServer {
   public function __construct(private Unix\Server $server) {}

@@ -1,12 +1,9 @@
 namespace Nuxed\Http\Server\Responder;
 
 use namespace Nuxed\Contract\Http\Message;
-use namespace Nuxed\Http\Server\Exception;
-use namespace Nuxed\Http\Server\Socket;
+use namespace Nuxed\Http\Server\{Exception, Socket};
 use namespace Nuxed\Http\Server;
-use namespace HH\Lib\{Async, C, Str, Regex};
-use namespace HH\Lib\Experimental\{IO, OS};
-use namespace Nuxed\Contract\Log;
+use namespace HH\Lib\{C, OS, Str};
 
 final class Responder implements IResponder {
 
@@ -84,8 +81,10 @@ final class Responder implements IResponder {
         $flash = false;
         try {
           if ($buffer !== "") {
+            /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
             $chunk = await Server\_Private\timeout($readHandle, 0.1);
           } else {
+            /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
             $chunk = await $readHandle;
           }
 
@@ -122,6 +121,7 @@ final class Responder implements IResponder {
         $buffer = '';
         $chunk = ''; // Don't use null here, because of the finally
 
+        /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
         await $handle;
       }
 
@@ -174,7 +174,7 @@ final class Responder implements IResponder {
       $shouldClose = $shouldClose || $response->getProtocolVersion() === "1.0";
 
       $response = $response->withoutHeader('transfer-encoding');
-    } elseif ($response->getProtocolVersion() === "1.1") {
+    } else if ($response->getProtocolVersion() === "1.1") {
       $response = $response->withoutHeader('content-length');
     } else {
       $shouldClose = true;

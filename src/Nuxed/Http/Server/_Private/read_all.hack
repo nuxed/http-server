@@ -1,6 +1,6 @@
 namespace Nuxed\Http\Server\_Private;
 
-use namespace HH\Lib\Experimental\IO;
+use namespace HH\Lib\IO;
 
 async function read_all(
   IO\ReadHandle $source,

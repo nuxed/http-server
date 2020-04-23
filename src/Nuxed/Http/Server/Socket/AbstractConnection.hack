@@ -1,8 +1,6 @@
 namespace Nuxed\Http\Server\Socket;
 
-use namespace HH\Asio;
-use namespace HH\Lib\Async;
-use namespace HH\Lib\Experimental\{IO, Network};
+use namespace HH\Lib\Network;
 
 abstract class AbstractConnection<T as Network\CloseableSocket>
   implements IConnection {

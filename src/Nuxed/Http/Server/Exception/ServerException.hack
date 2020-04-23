@@ -1,7 +1,7 @@
 namespace Nuxed\Http\Server\Exception;
 
 use namespace Nuxed\Contract\Http\Message;
-use namespace HH\Lib\Experimental\IO;
+use namespace HH\Lib\IO;
 
 use type Nuxed\Http\Message\Response;
 
