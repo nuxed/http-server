@@ -1,9 +1,9 @@
 namespace Nuxed\Http\Server\Parser;
 
-use namespace HH\Lib\{C, Str, Regex, Vec};
+use namespace HH\Lib\{C, Regex, Str};
 use namespace Nuxed\Http\Server\Socket;
-use namespace Nuxed\Http\{Server, Message};
-use namespace Nuxed\Contract\{Log, Http};
+use namespace Nuxed\Http\{Message, Server};
+use namespace Nuxed\Contract\Http;
 
 final class Parser implements IParser {
   public function __construct(private Server\Options $options) {}
@@ -41,7 +41,7 @@ final class Parser implements IParser {
     $contentLength = 0;
     if ($request->hasHeader('Transfer-Encoding')) {
       $contentLength = null;
-    } elseif ($request->hasHeader('Content-Length')) {
+    } else if ($request->hasHeader('Content-Length')) {
       $contentLength = Str\to_int($request->getHeaderLine('Content-Length'));
     }
 
@@ -50,7 +50,7 @@ final class Parser implements IParser {
       $stream = Message\Body\memory();
     } else {
       // otherwise body is present => delimit using Content-Length
-      $body = Server\_Private\read_body(
+      $_body = Server\_Private\read_body(
         $connection,
         $this->options->getChunkSize(),
         $this->options->getHttpTimeout(),
@@ -162,7 +162,7 @@ final class Parser implements IParser {
     if ($method === 'OPTIONS' && $target === '*') {
       // support asterisk-form for `OPTIONS *` request line only
       $uri = $scheme.$host;
-    } elseif ($method === 'CONNECT') {
+    } else if ($method === 'CONNECT') {
       $parts = \parse_url('tcp://'.$target);
 
       // check this is a valid authority-form request-target (host:port)
@@ -281,7 +281,7 @@ final class Parser implements IParser {
           Http\Message\StatusCode::BadRequest,
         );
       }
-    } elseif ($request->hasHeader('Content-Length')) {
+    } else if ($request->hasHeader('Content-Length')) {
       $string = $request->getHeaderLine('Content-Length');
       $int = Str\to_int($string);
       if ($int is null) {

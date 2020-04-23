@@ -1,7 +1,5 @@
 namespace Nuxed\Http\Server\Socket;
 
-use namespace HH\Lib\Experimental\Network;
-
 final class Server implements IServer {
   private function __construct(private IServer $server) {}
 

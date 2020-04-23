@@ -1,6 +1,6 @@
 namespace Nuxed\Http\Server\_Private;
 
-use namespace HH\Lib\{C, Str};
+use namespace HH\Lib\Str;
 use namespace Nuxed\Http\Server\Socket;
 
 async function read_body(

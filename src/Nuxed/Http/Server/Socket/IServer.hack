@@ -1,6 +1,5 @@
 namespace Nuxed\Http\Server\Socket;
 
-use namespace HH\Lib\Experimental\Network;
 
 interface IServer {
   /**

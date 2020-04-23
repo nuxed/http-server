@@ -1,7 +1,6 @@
 namespace Nuxed\Http\Server\Parser;
 
-use namespace HH\Lib\Experimental\File;
-use namespace HH\Lib\{C, Regex, Str, Vec};
+use namespace HH\Lib\{C, File, Regex, Str, Vec};
 use namespace Nuxed\Contract\Http;
 use namespace Nuxed\Http\{Message, Server};
 

@@ -1,10 +1,10 @@
 namespace Nuxed\Http\Server\_Private;
 
-use namespace HH\Lib\{C, Str};
+use namespace HH\Lib\Str;
 use namespace Nuxed\Http\Server\Socket;
 
 /**
- * Read status line and headers from the remote client. 
+ * Read status line and headers from the remote client.
  */
 async function read_headers(
   Socket\IConnection $connection,

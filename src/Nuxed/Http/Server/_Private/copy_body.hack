@@ -1,7 +1,6 @@
 namespace Nuxed\Http\Server\_Private;
 
-use namespace HH\Lib\Str;
-use namespace HH\Lib\Experimental\IO;
+use namespace HH\Lib\{IO, Str};
 
 async function copy_body(
   <<__AcceptDisposable>> IO\ReadHandle $source,
