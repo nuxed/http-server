@@ -37,11 +37,15 @@ final class MultipartParser {
     $body = $request->getBody();
     await $body->seekAsync(0);
     $start = null;
-    $buffer = await Server\_Private\read_all(
-      $body,
-      $this->options->getChunkSize(),
-      $this->options->getHttpTimeout(),
-    );
+    $buffer = '';
+    do {
+      // HHAST_IGNORE_ERROR[DontAwaitInALoop]
+      $chunk = await $body->readAsync(
+        $this->options->getChunkSize(),
+        $this->options->getHttpTimeout(),
+      );
+      $buffer .= $chunk;
+    } while ('' !== $chunk);
 
     $start = Str\search($buffer, $boundary."\r\n");
     $lastOperation = async {
@@ -238,7 +242,7 @@ final class MultipartParser {
 
       /* HH_IGNORE_ERROR[4110] dynamic regex */
             $matches = Regex\first_match($part, '/'.$parameter.'="?(.*)"$/')
-                as nonnull;
+        as nonnull;
       return $matches[1];
     }
 

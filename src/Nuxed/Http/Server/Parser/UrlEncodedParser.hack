@@ -22,11 +22,15 @@ final class UrlEncodedParser {
     }
 
     $body = $request->getBody();
-    $buffer = await Server\_Private\read_all(
-      $body,
-      $this->options->getChunkSize(),
-      $this->options->getHttpTimeout(),
-    );
+    $buffer = '';
+    do {
+      // HHAST_IGNORE_ERROR[DontAwaitInALoop]
+      $chunk = await $body->readAsync(
+        $this->options->getChunkSize(),
+        $this->options->getHttpTimeout(),
+      );
+      $buffer .= $chunk;
+    } while ('' !== $chunk);
 
     $result = HttpNormalizer\parse($buffer);
 

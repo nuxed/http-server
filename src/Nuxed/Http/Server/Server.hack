@@ -1,7 +1,7 @@
 namespace Nuxed\Http\Server;
 
 use namespace HH\Asio;
-use namespace HH\Lib\{Async, Vec};
+use namespace HH\Lib\{Async, Str};
 use namespace Nuxed\Contract\Http\Server;
 use namespace Nuxed\Contract\Log;
 
@@ -27,7 +27,6 @@ final class Server {
     $this->handler = $handler ?? new Handler\NotFoundHandler();
     $this->stack = $stack ?? new MiddlewareStack();
     $this->driver = $driver ?? new Driver\Driver($this->options);
-
     $this->logger = $logger;
 
     $this->semaphore = new Async\Semaphore(
@@ -61,6 +60,8 @@ final class Server {
 
   public async function run(): Awaitable<void> {
     if ($this->running) {
+      await $this->getLogger()
+        ->critical('Attempt to run server while its already running.');
       throw new Exception\RuntimeException('Server is already running.');
     }
 
@@ -69,8 +70,12 @@ final class Server {
     $pending = new \SplStack<Awaitable<void>>();
     foreach ($this->sockets as $socket) {
       $servers[] = async {
+        await $this->getLogger()->debug(Str\format(
+          'Server listening on %s',
+          $socket->getLocalAddress()->toString(),
+        ));
         while ($this->running) {
-          /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
+          // HHAST_IGNORE_ERROR[DontAwaitInALoop]
           $connection = await $socket->nextConnection();
           $pending->push($this->semaphore->waitForAsync($connection));
         }
@@ -80,22 +85,27 @@ final class Server {
     $observe = async {
       while ($this->running) {
         if (!$pending->isEmpty()) {
-          /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
-          await $pending->shift();
+          try {
+            // HHAST_IGNORE_ERROR[DontAwaitInALoop]
+            await $pending->shift();
+          } catch (\Throwable $e) {
+            foreach ($this->sockets as $socket) {
+              $socket->stopListening();
+            }
+
+            throw $e;
+          }
         } else {
-          /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
+          // HHAST_IGNORE_ERROR[DontAwaitInALoop]
           await Asio\later();
         }
       }
     };
 
-    await Asio\v(Vec\concat(vec[$observe], $servers));
-  }
-
-  private async function start(Socket\IServer $socket): Awaitable<void> {
-    while ($this->running) {
-      /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
-      $_connection = await $socket->nextConnection();
+    concurrent {
+      await $observe;
+      await Asio\v($servers);
     }
+    ;
   }
 }

@@ -31,4 +31,8 @@ final class Server implements IServer {
   public function getLocalAddress(): SocketAddress {
     return $this->server->getLocalAddress();
   }
+
+  public function stopListening(): void {
+    $this->server->stopListening();
+  }
 }

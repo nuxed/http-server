@@ -1,11 +1,12 @@
 {
-  "roots": [ "src/" ],
+  "roots": [
+    "src/"
+  ],
   "builtinLinters": "all",
   "disableAllAutoFixes": false,
   "disabledLinters": [
     "Facebook\\HHAST\\Linters\\AsyncFunctionAndMethodLinter",
-    "Facebook\\HHAST\\PreferSingleQuotedStringLiteralLinter",
-    "Facebook\\HHAST\\ShoutCaseEnumMembersLinter"
+    "Facebook\\HHAST\\ShoutCaseEnumMembersLiner"
   ],
   "overrides": []
 }

@@ -4,57 +4,79 @@ use namespace HH\Lib\Network;
 
 abstract class AbstractConnection<T as Network\CloseableSocket>
   implements IConnection {
+
   private ?int $id = null;
 
   public function __construct(protected T $socket) {}
 
-  /** An immediate, unordered blocking read.
-    *
-    * You almost certainly don't want to call this; instead, use
-    * `readAsync()` or `readLineAsync()`, which are wrappers around
-    * this
-    */
-  final public function rawReadBlocking(?int $max_bytes = null): string {
-    return $this->socket->rawReadBlocking($max_bytes);
-  }
-
-  /** Read until we reach `$max_bytes`, or the end of the file. */
-  final public async function readAsync(
-    ?int $max_bytes = null,
-    ?float $timeout_seconds = null,
-  ): Awaitable<string> {
-    return await $this->socket->readAsync($max_bytes, $timeout_seconds);
-  }
-
-  /** Read until we reach `$max_bytes`, the end of the file, or the
-   * end of the line.
+  /** An immediate, unordered read.
    *
-   * 'End of line' is platform-specific, and matches the C `fgets()`
-   * function; the newline character/characters are included in the
-   * return value. */
-  final public async function readLineAsync(
-    ?int $max_bytes = null,
-    ?float $timeout_seconds = null,
-  ): Awaitable<string> {
-    return await $this->socket->readLineAsync($max_bytes, $timeout_seconds);
+   * @see `genRead`
+   * @param max_bytes the maximum number of bytes to read
+   *   - if `null`, an internal default will be used.
+   *   - if 0, an `InvalidArgumentException` will be raised.
+   * @throws `OS\BlockingIOException` if there is no more
+   *   data available to read. If you want to wait for more
+   *   data, use `genRead` instead.
+   * @returns
+   *   - the read data on success.
+   *   - the empty string if the end of file is reached.
+   */
+  public function read(?int $max_bytes = null): string {
+    return $this->socket->read($max_bytes);
   }
 
-  /** Possibly write some of the string.
+  /** Read from the handle, waiting for data if necessary.
+   *
+   * A wrapper around `read()` that will wait for more data if there is none
+   * available at present.
+   *
+   * @param max_bytes the maximum number of bytes to read
+   *   - if `null`, an internal default will be used.
+   *   - if 0, an `InvalidArgumentException` will be raised.
+   * @returns
+   *   - the read data on success
+   *   - the empty string if the end of file is reached.
+   */
+  public async function readAsync(
+    ?int $max_bytes = null,
+    ?int $timeout_ns = null,
+  ): Awaitable<string> {
+    return await $this->socket->readAsync($max_bytes, $timeout_ns);
+  }
+
+  /** An immediate unordered write.
+   *
+   * @see `genWrite()`
+   * @throws `OS\BlockingIOException` if the handle is a socket or similar,
+   *   and the write would block.
+   * @returns the number of bytes written on success
    *
    * Returns the number of bytes written, which may be 0.
    */
-  final public function rawWriteBlocking(string $bytes): int {
-    return $this->rawWriteBlocking($bytes);
+  public function write(string $bytes): int {
+    return $this->socket->write($bytes);
   }
 
-  final public async function writeAsync(
+  /** Write data, waiting if necessary.
+   *
+   * A wrapper around `write()` that will wait if `write()` would throw
+   * an `OS\BlockingIOException`
+   *
+   * It is possible for the write to *partially* succeed - check the return
+   * value and call again if needed.
+   *
+   * @returns the number of bytes written, which may be less than the length of
+   *   input string.
+   */
+  public async function writeAsync(
     string $bytes,
-    ?float $timeout_seconds = null,
-  ): Awaitable<void> {
-    await $this->socket->writeAsync($bytes, $timeout_seconds);
+    ?int $timeout_ns = null,
+  ): Awaitable<int> {
+    return await $this->socket->writeAsync($bytes, $timeout_ns);
   }
 
-  final public async function flushAsync(): Awaitable<void> {
+  public async function flushAsync(): Awaitable<void> {
     await $this->socket->flushAsync();
   }
 
@@ -67,10 +89,6 @@ abstract class AbstractConnection<T as Network\CloseableSocket>
    * Returns the address of the remote side of the socket
    */
   abstract public function getRemoteAddress(): SocketAddress;
-
-  final public function isEndOfFile(): bool {
-    return $this->socket->isEndOfFile();
-  }
 
   /** Complete pending operations then close the handle */
   final public async function closeAsync(): Awaitable<void> {

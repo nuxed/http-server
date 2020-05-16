@@ -9,5 +9,5 @@ namespace Nuxed\Http\Server\_Private;
  */
 function format_date_header(?int $timestamp = null): string {
   $timestamp = $timestamp ?? \time();
-  return \gmdate("D, d M Y H:i:s", $timestamp)." GMT";
+  return \gmdate('D, d M Y H:i:s', $timestamp).' GMT';
 }

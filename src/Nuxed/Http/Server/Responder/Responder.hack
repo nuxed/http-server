@@ -62,7 +62,6 @@ final class Responder implements IResponder {
       $request is nonnull && 'HEAD' === Str\uppercase($request->getMethod())
     ) {
       await $connection->writeAsync($buffer, $this->options->getHttpTimeout());
-      await $connection->flushAsync();
       if ($shouldClose) {
         await $connection->closeAsync();
       }
@@ -71,8 +70,10 @@ final class Responder implements IResponder {
 
 
     // Required for the finally, not directly overwritten, even if your IDE says otherwise.
-    $chunk = "";
+    $chunk = '';
     $body = $response->getBody();
+    await $body->seekAsync(0);
+
     $streamThreshold = $this->options->getStreamThreshold();
     try {
       $readHandle = $body->readAsync($this->options->getChunkSize());
@@ -80,11 +81,11 @@ final class Responder implements IResponder {
       while (true) {
         $flash = false;
         try {
-          if ($buffer !== "") {
-            /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
+          if ($buffer !== '') {
+            // HHAST_IGNORE_ERROR[DontAwaitInALoop]
             $chunk = await Server\_Private\timeout($readHandle, 0.1);
           } else {
-            /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
+            // HHAST_IGNORE_ERROR[DontAwaitInALoop]
             $chunk = await $readHandle;
           }
 
@@ -121,7 +122,7 @@ final class Responder implements IResponder {
         $buffer = '';
         $chunk = ''; // Don't use null here, because of the finally
 
-        /*HHAST_IGNORE_ERROR[DontAwaitInALoop]*/
+        // HHAST_IGNORE_ERROR[DontAwaitInALoop]
         await $handle;
       }
 
@@ -132,7 +133,6 @@ final class Responder implements IResponder {
       if ('' !== $buffer || $shouldClose) {
         await $connection->writeAsync($buffer);
         if ($shouldClose) {
-          await $connection->flushAsync();
           await $connection->closeAsync();
         }
       }
@@ -140,7 +140,6 @@ final class Responder implements IResponder {
       return; // Client will be closed in finally.
     } finally {
       if ($chunk is nonnull) {
-        await $connection->flushAsync();
         await $connection->closeAsync();
       }
     }
@@ -171,10 +170,10 @@ final class Responder implements IResponder {
 
 
     if ($contentLength !== null) {
-      $shouldClose = $shouldClose || $response->getProtocolVersion() === "1.0";
+      $shouldClose = $shouldClose || $response->getProtocolVersion() === '1.0';
 
       $response = $response->withoutHeader('transfer-encoding');
-    } else if ($response->getProtocolVersion() === "1.1") {
+    } else if ($response->getProtocolVersion() === '1.1') {
       $response = $response->withoutHeader('content-length');
     } else {
       $shouldClose = true;
@@ -187,7 +186,7 @@ final class Responder implements IResponder {
         ->withHeader('connection', vec['keep-alive'])
         ->withHeader(
           'keep-alive',
-          vec["timeout=".$this->options->getHttpTimeout()],
+          vec['timeout='.$this->options->getHttpTimeout()],
         );
     }
 

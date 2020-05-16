@@ -8,19 +8,19 @@ use namespace Nuxed\Http\Server\Socket;
  */
 async function read_headers(
   Socket\IConnection $connection,
-  int $chunkSize = 1048576,
-  float $timeOut = 120.0,
+  int $chunk_size = 1048576,
+  int $timeout_ns = 120000,
   string $contents = '',
 ): Awaitable<string> {
-  // ?
-  if ($connection->isEndOfFile()) {
+  $chunk = await $connection->readAsync($chunk_size, $timeout_ns);
+  if ('' === $chunk) {
     return $contents;
   }
 
-  $contents .= await $connection->readLineAsync($chunkSize, $timeOut);
-  if (Str\ends_with($contents, "\r\n\r\n")) {
+  $contents .= $chunk;
+  if (Str\contains($contents, "\r\n\r\n")) {
     return $contents;
   }
 
-  return await read_headers($connection, $chunkSize, $timeOut, $contents);
+  return await read_headers($connection, $chunk_size, $timeout_ns, $contents);
 }

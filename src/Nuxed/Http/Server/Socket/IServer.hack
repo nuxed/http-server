@@ -1,6 +1,5 @@
 namespace Nuxed\Http\Server\Socket;
 
-
 interface IServer {
   /**
    * Listen for client connections on the specified server address.
@@ -18,4 +17,6 @@ interface IServer {
    * Return the local (listening) address for the server
    */
   public function getLocalAddress(): SocketAddress;
+
+  public function stopListening(): void;
 }

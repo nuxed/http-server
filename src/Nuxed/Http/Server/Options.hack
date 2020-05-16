@@ -1,16 +1,25 @@
 namespace Nuxed\Http\Server;
 
 use namespace HH\Lib\{C, Vec};
+use namespace Nuxed\Contract\Http\Message;
+
 
 final class Options {
   private bool $debug = false;
   private int $connectionLimit = 10000;
   private int $connectionsPerIpLimit =
     30; // IPv4: /32, IPv6: /56 (per RFC 6177)
-  private float $httpTimeout = 15.0; // seconds
+  private int $httpTimeout = 15000; // seconds
 
-  private vec<string> $allowedMethods =
-    vec["GET", "POST", "PUT", "PATCH", "HEAD", "OPTIONS", "DELETE"];
+  private vec<string> $allowedMethods = vec[
+    Message\RequestMethod::Get,
+    Message\RequestMethod::Post,
+    Message\RequestMethod::Put,
+    Message\RequestMethod::Patch,
+    Message\RequestMethod::Head,
+    Message\RequestMethod::Options,
+    Message\RequestMethod::Delete,
+  ];
 
   private int $bodySizeLimit = 131072;
   private int $headerSizeLimit = 32768;
@@ -18,7 +27,7 @@ final class Options {
   private int $streamThreshold = 8192;
 
   private bool $fileUpload = true;
-  private int $uploadedFileSizeLimit = 2048;
+  private int $uploadedFileSizeLimit = 2000000;
   private int $uploadedFileLimit = 100;
 
   private bool $xPoweredBy = true;
@@ -134,17 +143,17 @@ final class Options {
   }
 
   /**
-   * @return int Number of seconds an HTTP/1.x connection may be idle before it is automatically closed.
+   * @return int Number of mirco seconds an HTTP/1.x connection may be idle before it is automatically closed.
    */
-  public function getHttpTimeout(): float {
+  public function getHttpTimeout(): int {
     return $this->httpTimeout;
   }
 
   /**
-   * @param int $seconds Number of seconds an HTTP/1.x connection may be idle before it is automatically closed.
+   * @param int $seconds Number of micro seconds an HTTP/1.x connection may be idle before it is automatically closed.
    *                     Default is 15.
    */
-  public function withHttpTimeout(float $seconds): Options {
+  public function withHttpTimeout(int $seconds): Options {
     invariant(
       $seconds >= 1,
       'Keep alive timeout setting must be greater than or equal to one second',

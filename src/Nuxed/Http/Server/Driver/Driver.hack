@@ -28,8 +28,9 @@ final class Driver implements IDriver {
       $handler = new Handler\StackHandler($stack, $handler);
       $response = await $handler->handle($request);
     } catch (Exception\ServerException $e) {
-      $response = Http\Message\Response\empty()
+      $response = Http\Message\Response\text($e->getMessage())
         ->withStatus($e->getStatusCode());
+
       foreach ($e->getHeaders() as $header => $values) {
         $response = $response->withHeader($header, $values);
       }

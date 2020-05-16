@@ -1,9 +1,9 @@
 namespace Nuxed\Http\Server\Parser;
 
 use namespace HH\Lib\{C, Regex, Str};
+use namespace Nuxed\Contract\Http;
 use namespace Nuxed\Http\Server\Socket;
 use namespace Nuxed\Http\{Message, Server};
-use namespace Nuxed\Contract\Http;
 
 final class Parser implements IParser {
   public function __construct(private Server\Options $options) {}
@@ -25,7 +25,6 @@ final class Parser implements IParser {
     }
 
     if ($endOfHeader is null) {
-
       throw new Server\Exception\ServerException(
         Http\Message\StatusCode::BadRequest,
       );
@@ -45,18 +44,21 @@ final class Parser implements IParser {
       $contentLength = Str\to_int($request->getHeaderLine('Content-Length'));
     }
 
-    if ($contentLength === 0) {
-      // happy path: request body is known to be empty
-      $stream = Message\Body\memory();
-    } else {
+    // happy path: request body is known to be empty
+    $stream = Message\Body\temporary();
+    if ($contentLength !== 0) {
       // otherwise body is present => delimit using Content-Length
-      $_body = Server\_Private\read_body(
-        $connection,
-        $this->options->getChunkSize(),
-        $this->options->getHttpTimeout(),
-        $contentLength,
-      );
+      $body = Str\slice($buffer, $endOfHeader);
       $stream = Message\Body\temporary();
+      do {
+        $written = await $stream->writeAsync($body);
+        $body = Str\slice($body, $written);
+      } while ($body !== '');
+
+      if ($contentLength is nonnull) {
+        $contentLength -= Str\length($body);
+      }
+
       await Server\_Private\copy_body(
         $connection,
         $stream,
@@ -127,14 +129,27 @@ final class Parser implements IParser {
     foreach ($matches as $match) {
       $key = $match[1];
       $value = $match[2];
-      if (C\contains_key($fields, $key)) {
+      if (
+        'content-type' === Str\lowercase($key) &&
+        Str\contains($value, ';') &&
+        Str\contains($value, 'boundary=')
+      ) {
+        $value = Str\split($value, ';', 2);
+        foreach ($value as $val) {
+          if (C\contains_key($fields, $key)) {
+            $fields[$key][] = $val;
+          } else {
+            $fields[$key] = vec[$val];
+          }
+        }
+      } else if (C\contains_key($fields, $key)) {
         $fields[$key][] = $value;
       } else {
         $fields[$key] = vec[$value];
       }
 
       // match `Host` request header
-      if ($host is null && 'host' === Str\lowercase($key)) {
+      if ($host is null && 'host' === Str\lowercase($key) && $value is string) {
         $host = $value;
       }
     }
